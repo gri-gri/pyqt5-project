@@ -55,12 +55,11 @@ class DialogOnChoosingTestingMode(QDialog, Ui_choosing_dialog):
                 index_of_right_one = working_task['right_nums'][0]
                 self.sp_of_radiobuttons = []
                 for i in range(len(variants)):
-                    btn = MyQRadioButton(td, True if i + 1 == index_of_right_one else False, i)
+                    btn = QRadioButton(variants[i], td)
                     if i == 0:
                         btn.setChecked(True)
-                    btn.setText(variants[i])
                     btn.move(30, 200 + 30 * i)
-                    self.sp_of_radiobuttons.append(btn)
+                    self.sp_of_radiobuttons.append((btn, True if i + 1 == index_of_right_one else False, i))
                     print(btn)
                     print(btn.geometry())
                     print(btn.parent)
@@ -71,12 +70,11 @@ class DialogOnChoosingTestingMode(QDialog, Ui_choosing_dialog):
                 indexes_of_right_ones = working_task['right_nums']
                 self.sp_of_checkboxes = []
                 for i in range(len(variants)):
-                    btn = MyQCheckBox(td, True if i + 1 == indexes_of_right_ones else False, i)
+                    btn = QCheckBox(variants[i], td)
                     if i == 0:
                         btn.setChecked(True)
-                    btn.setText(variants[i])
                     btn.move(30, 200 + 30 * i)
-                    self.sp_of_checkboxes.append(btn)
+                    self.sp_of_checkboxes.append((btn, True if i + 1 == indexes_of_right_ones else False, i))
 
         except StopIteration:
             self.submit()
@@ -252,25 +250,26 @@ class DialogOnTesting(QDialog, Ui_dialog_testing):
                 dialog = DialogOnWrong(self, user_answer, self.parent.right_answer)
                 dialog.show()
         elif self.mode == 2:
-            btn_checked = next(filter(lambda btn: btn.isChecked(), self.parent.sp_of_radiobuttons))
-            if btn_checked.isRight():
+            btn_checked = next(filter(lambda btn: btn[0].isChecked(), self.parent.sp_of_radiobuttons))
+            sp = self.parent.sp_of_radiobuttons
+            if sp[sp.index(btn_checked)][1]:
                 self.parent.counter_right += 1
                 open_warning_dialog(self, 'Верно', "Вы правильно ответили на вопрос!")
             else:
-                dialog = DialogOnWrong(self, btn_checked.text(), next(filter(lambda btn: btn.isRight(),
-                                                                             self.parent.sp_of_radiobuttons)).text())
+                dialog = DialogOnWrong(self, btn_checked[0].text(), next(filter(lambda btn: btn[1],
+                                                                             self.parent.sp_of_radiobuttons))[0].text())
                 dialog.show()
         else:  # self.mode == 3
-            btns_checked = sorted(list(filter(lambda btn: btn.isChecked(), self.parent.sp_of_checkboxes)),
-                                  key=lambda btn: btn.text())
-            right_btns = sorted(list(filter(lambda btn: btn.isRight(), self.parent.sp_of_checkboxes)),
-                                key=lambda btn: btn.text())
+            btns_checked = sorted(list(filter(lambda btn: btn[0].isChecked(), self.parent.sp_of_checkboxes)),
+                                  key=lambda btn: btn[0].text())
+            right_btns = sorted(list(filter(lambda btn: btn[1], self.parent.sp_of_checkboxes)),
+                                key=lambda btn: btn[0].text())
             if btns_checked == right_btns:
                 self.parent.counter_right += 1
                 open_warning_dialog(self, 'Верно', "Вы правильно ответили на вопрос!")
             else:
-                dialog = DialogOnWrong(self, 'Номер(а): ' + ', '.join(map(lambda btn: str(btn.indexx), btns_checked)),
-                                       'Номер(а): ' + ', '.join(map(lambda btn: str(btn.indexx), right_btns)))
+                dialog = DialogOnWrong(self, 'Номер(а): ' + ', '.join(map(lambda btn: str(btn[2]), btns_checked)),
+                                       'Номер(а): ' + ', '.join(map(lambda btn: str(btn[2]), right_btns)))
                 dialog.show()
         super().close()
         self.parent.help_func()
