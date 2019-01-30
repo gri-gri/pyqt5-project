@@ -290,7 +290,8 @@ class DialogEndOfTesting(QDialog, Ui_dialog_end_of_testing):
 
 class MyQRadioButton(QRadioButton):
     def __init__(self, parent, is_right, indexx):
-        super().__init__(parent)
+        super().__init__()
+        self.parent = parent
         self.indexx = indexx
         self.is_right = is_right
 
@@ -300,7 +301,8 @@ class MyQRadioButton(QRadioButton):
 
 class MyQCheckBox(QCheckBox):
     def __init__(self, parent, is_right, indexx):
-        super().__init__(parent)
+        super().__init__()
+        self.parent = parent
         self.is_right = is_right
         self.indexx = indexx
 
