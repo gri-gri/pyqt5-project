@@ -11,6 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
+        Dialog.setWindowModality(QtCore.Qt.WindowModal)
         Dialog.resize(400, 427)
         self.plainTextEdit = QtWidgets.QPlainTextEdit(Dialog)
         self.plainTextEdit.setGeometry(QtCore.QRect(30, 60, 211, 121))
@@ -42,6 +43,9 @@ class Ui_Dialog(object):
         self.lcd_all = QtWidgets.QLCDNumber(self.verticalLayoutWidget)
         self.lcd_all.setObjectName("lcd_all")
         self.verticalLayout.addWidget(self.lcd_all)
+        self.btn_answer = QtWidgets.QPushButton(Dialog)
+        self.btn_answer.setGeometry(QtCore.QRect(280, 210, 75, 23))
+        self.btn_answer.setObjectName("btn_answer")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -51,4 +55,5 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Задание"))
         self.label.setText(_translate("Dialog", "Правильно"))
         self.label_2.setText(_translate("Dialog", "из"))
+        self.btn_answer.setText(_translate("Dialog", "Ответить"))
 

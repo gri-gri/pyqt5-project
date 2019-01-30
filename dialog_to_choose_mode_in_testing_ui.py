@@ -11,6 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
+        Dialog.setWindowModality(QtCore.Qt.NonModal)
         Dialog.resize(371, 279)
         self.btn_get_test = QtWidgets.QPushButton(Dialog)
         self.btn_get_test.setGeometry(QtCore.QRect(134, 90, 91, 23))

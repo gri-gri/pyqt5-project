@@ -11,13 +11,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(400, 300)
+        Dialog.setWindowModality(QtCore.Qt.WindowModal)
+        Dialog.resize(384, 109)
         self.label = QtWidgets.QLabel(Dialog)
-        self.label.setGeometry(QtCore.QRect(80, 60, 47, 13))
+        self.label.setGeometry(QtCore.QRect(10, 10, 47, 13))
         self.label.setText("")
         self.label.setObjectName("label")
         self.pushButton = QtWidgets.QPushButton(Dialog)
-        self.pushButton.setGeometry(QtCore.QRect(290, 250, 75, 23))
+        self.pushButton.setGeometry(QtCore.QRect(20, 60, 75, 23))
         self.pushButton.setObjectName("pushButton")
 
         self.retranslateUi(Dialog)
