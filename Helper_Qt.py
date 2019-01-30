@@ -12,11 +12,6 @@ from random import shuffle
 from itertools import zip_longest
 
 
-class HelpingMainWindow(QDialog):
-    def __init__(self):
-        super().__init__()
-
-
 class MyMainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
@@ -36,9 +31,71 @@ class DialogOnChoosingTestingMode(QDialog, Ui_choosing_dialog):
         self.btn_get_test.clicked.connect(self.start_test)
         self.btn_add_test.clicked.connect(self.add_test)
 
+    def help_func(self):
+        try:
+            working_task = next(self.data)
+            print(working_task)
+            mode = working_task['type']
+            task_text = working_task['task_text']
+
+            td = DialogOnTesting(self, mode)
+            td.btn_answer.clicked.connect(td.answer)
+            td.plainTextEdit.setPlainText(task_text)
+            td.progressBar.setValue(self.counter_all * (100 // self.n))
+            td.lcd_all.display(self.counter_all)
+            td.lcd_right.display(self.counter_right)
+
+            if mode == 1:
+                td.answer_inputs = [QLineEdit(td)]
+                td.answer_inputs[0].move(30, 200)
+                self.right_answer = working_task['variants'][0]
+
+            elif mode == 2:
+                variants = working_task['variants']
+                index_of_right_one = working_task['right_nums'][0]
+                self.sp_of_radiobuttons = []
+                for i in range(len(variants)):
+                    btn = MyQRadioButton(td, True if i + 1 == index_of_right_one else False, i)
+                    if i == 0:
+                        btn.setChecked(True)
+                    btn.setText(variants[i])
+                    btn.move(30, 200 + 30 * i)
+                    self.sp_of_radiobuttons.append(btn)
+                    print(btn)
+                    print(btn.geometry())
+                    print(btn.parent)
+                    print(self.sp_of_radiobuttons)
+
+            else:  # mode == 3
+                variants = working_task['variants']
+                indexes_of_right_ones = working_task['right_nums']
+                self.sp_of_checkboxes = []
+                for i in range(len(variants)):
+                    btn = MyQCheckBox(td, True if i + 1 == indexes_of_right_ones else False, i)
+                    if i == 0:
+                        btn.setChecked(True)
+                    btn.setText(variants[i])
+                    btn.move(30, 200 + 30 * i)
+                    self.sp_of_checkboxes.append(btn)
+
+        except StopIteration:
+            self.submit()
+
+    def submit(self):
+        dialog = DialogEndOfTesting(self, self.counter_right, self.counter_all)
+        dialog.show()
+
     def start_test(self):
-        testing_dialog = DialogOnTesting(self)
-        testing_dialog.show()
+
+        self.n = 10
+        self.data = database.data
+        shuffle(self.data)
+        self.data = iter(self.data[:self.n])
+        self.counter_all = 0
+        self.counter_right = 0
+
+        self.help_func()
+
 
     def add_test(self):
         adding_task_dialog = DialogOnAddingTask(self)
@@ -161,21 +218,12 @@ class DialogOnAddingTask(QDialog, Ui_adding_task):
 
 
 class DialogOnTesting(QDialog, Ui_dialog_testing):
-    def __init__(self, parent):
+    def __init__(self, parent, mode):
+        self.parent = parent
         super().__init__(parent)
         self.setupUi(self)
-        self.btn_answer.clicked.connect(self.answer)
-        self.counter_right = 0
-        self.counter_all = 0
-        self.n = 10
-        self.data = database.data
-        shuffle(self.data)
-        # print(self.data)
-        self.data = iter(self.data[:self.n])
-        self.right_answer = None
-        self.answer_inputs = []
-        self.now_mode = -1
-        self.rewrite()
+        self.mode = mode
+        self.show()
 
     def answer(self):
         class DialogOnWrong(QDialog, Ui_dialog_wrong):
@@ -194,82 +242,38 @@ class DialogOnTesting(QDialog, Ui_dialog_testing):
             def myexit(self):
                 super().close()
 
-        self.counter_all += 1
-        if self.now_mode == 1:
+        self.parent.counter_all += 1
+        if self.mode == 1:
             user_answer = self.answer_inputs[0].text()
-            if user_answer == self.right_answer:
-                self.counter_right += 1
+            if user_answer == self.parent.right_answer:
+                self.parent.counter_right += 1
                 open_warning_dialog(self, 'Верно', "Вы правильно ответили на вопрос!")
             else:
-                dialog = DialogOnWrong(self, user_answer, self.right_answer)
+                dialog = DialogOnWrong(self, user_answer, self.parent.right_answer)
                 dialog.show()
-        else:
-            btns_checked = list(filter(lambda btn: btn.isChecked(), self.answer_inputs))
-            users_answer_is_right = any(filter(lambda btn: btn.is_right, btns_checked))
-            if users_answer_is_right:
-                self.counter_right += 1
+        elif self.mode == 2:
+            btn_checked = next(filter(lambda btn: btn.isChecked(), self.parent.sp_of_radiobuttons))
+            if btn_checked.isRight():
+                self.parent.counter_right += 1
                 open_warning_dialog(self, 'Верно', "Вы правильно ответили на вопрос!")
             else:
-                if self.now_mode == 2:
-                    # print(btns_checked)
-                    dialog = DialogOnWrong(self, btns_checked[0].text(), next(filter(lambda btn: btn.is_right,
-                                                                                     self.answer_inputs)).text())
-                    dialog.show()
-                else:
-                    dialog = DialogOnWrong(self, 'Номер(а): ' + ', '.join(map(lambda btn: str(btn.indexx), btns_checked)),
-                                           'Номер(а): ' + ', '.join(map(lambda btn: str(btn.indexx),
-                                                                        filter(lambda btn: btn.is_right,
-                                                                               self.answer_inputs))))
-                    dialog.show()
-        self.rewrite()
-
-    def rewrite(self):
-        for i in self.answer_inputs:
-            i.setParent(helpp)
-        self.answer_inputs = []
-        self.progressBar.setValue(self.counter_all * (100 // self.n))
-        self.lcd_all.display(self.counter_all)
-        self.lcd_right.display(self.counter_right)
-        try:
-            working_task = next(self.data)
-            print('working_task = {}'.format(working_task))
-        except StopIteration:
-            self.submit()
-            self.close()
-            return None
-        mode = working_task['type']
-        task_text = working_task['task_text']
-        self.plainTextEdit.setPlainText(task_text)
-        if mode == 1:
-            print('Mode 1')
-            self.answer_inputs = [QLineEdit(self)]
-            self.answer_inputs[0].move(30, 200)
-            self.right_answer = working_task['variants'][0]
-            print('Mode 1 ended')
-        else:
-            print('Mode 2 or 3')
-            variants = working_task['variants']
-            right_nums = working_task['right_nums']
-            bar = len(variants)
-            for x, y, text, indexx in zip_longest([30]*bar, range(200, 200+30*bar, 30), variants, range(1, bar+1)):
-                print('x: {}, y: {}, text: {}, indexx: {}'.format(x, y, text, indexx))
-                is_right = True if indexx in right_nums else False
-                btn = MyQRadioButton(self, is_right, indexx) if mode == 2 else MyQCheckBox(self, is_right, indexx)
-                if indexx == 1:
-                    btn.setChecked(True)
-                btn.move(x, y)
-                btn.setText(text)
-                print(btn)
-                self.answer_inputs.append(btn)
-                print(self.answer_inputs)
-            print("Good!")
-        print('self.now_mode: {}'.format(self.now_mode))
-        print('Mode {}'.format(mode))
-        self.now_mode = mode
-
-    def submit(self):
-        dialog = DialogEndOfTesting(self, self.counter_right, self.counter_all)
-        dialog.show()
+                dialog = DialogOnWrong(self, btn_checked.text(), next(filter(lambda btn: btn.isRight(),
+                                                                             self.parent.sp_of_radiobuttons)).text())
+                dialog.show()
+        else:  # self.mode == 3
+            btns_checked = sorted(list(filter(lambda btn: btn.isChecked(), self.parent.sp_of_checkboxes)),
+                                  key=lambda btn: btn.text())
+            right_btns = sorted(list(filter(lambda btn: btn.isRight(), self.parent.sp_of_checkboxes)),
+                                key=lambda btn: btn.text())
+            if btns_checked == right_btns:
+                self.parent.counter_right += 1
+                open_warning_dialog(self, 'Верно', "Вы правильно ответили на вопрос!")
+            else:
+                dialog = DialogOnWrong(self, 'Номер(а): ' + ', '.join(map(lambda btn: str(btn.indexx), btns_checked)),
+                                       'Номер(а): ' + ', '.join(map(lambda btn: str(btn.indexx), right_btns)))
+                dialog.show()
+        super().close()
+        self.parent.help_func()
 
 
 class DialogEndOfTesting(QDialog, Ui_dialog_end_of_testing):
@@ -286,18 +290,22 @@ class DialogEndOfTesting(QDialog, Ui_dialog_end_of_testing):
 
 class MyQRadioButton(QRadioButton):
     def __init__(self, parent, is_right, indexx):
-        self.parent = parent
         super().__init__(parent)
         self.indexx = indexx
         self.is_right = is_right
+
+    def isRight(self):
+        return self.is_right
 
 
 class MyQCheckBox(QCheckBox):
     def __init__(self, parent, is_right, indexx):
-        self.parent = parent
         super().__init__(parent)
         self.is_right = is_right
         self.indexx = indexx
+
+    def isRight(self):
+        return self.is_right
 
 
 def open_warning_dialog(parent, title, label_text):
@@ -313,7 +321,6 @@ if __name__ == '__main__':
     database = DatabaseClass()
     app = QApplication(sys.argv)
     window = MyMainWindow()
-    helpp = HelpingMainWindow()
     window.show()
     my_exit_code = app.exec()
     database.obnov()
