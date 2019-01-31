@@ -1,7 +1,12 @@
 import sys
-from contact_with_base import DatabaseClass
+from random import shuffle
+from itertools import zip_longest
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QInputDialog, \
 QLineEdit, QRadioButton, QCheckBox, QMessageBox
+
+from contact_with_base import DatabaseClass
+import my_math
+
 from main_window_ui import Ui_MainWindow
 from dialog_to_choose_mode_in_testing_ui import Ui_Dialog as Ui_choosing_dialog
 from dialog_adding_task_ui import Ui_Dialog as Ui_adding_task
@@ -10,8 +15,8 @@ from dialog_end_of_testing_ui import Ui_Dialog as Ui_dialog_end_of_testing
 from dialog_label_ui import Ui_Dialog as Ui_dialog_label
 from dialog_radiobutton_ui import Ui_Dialog as Ui_dialog_radiobutton_ui
 from dialog_checkbox_ui import Ui_Dialog as Ui_dialog_checkbox_ui
-from random import shuffle
-from itertools import zip_longest
+from dialog_choosing_equation_type_ui import Ui_Dialog as Ui_dialog_choosing_equation_type
+from dialog_coefficients_ui import Ui_Dialog as Ui_dialog_coefficients
 
 
 class MyMainWindow(QMainWindow, Ui_MainWindow):
@@ -19,10 +24,58 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.btn_test.clicked.connect(self.go_to_testing)
+        self.btn_math_part.clicked.connect(self.go_to_math_part)
 
     def go_to_testing(self):
         test_mode_choosing_dialog = DialogOnChoosingTestingMode(self)
         test_mode_choosing_dialog.show()
+
+    def go_to_math_part(self):
+        dialog_choosing_equation_type = DialogOnChoosingEquationType(self)
+        dialog_choosing_equation_type.show()
+
+
+class DialogOnChoosingEquationType(QDialog, Ui_dialog_choosing_equation_type):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.btn_square.clicked.connect(self.square)
+        self.btn_bisquare.clicked.connect(self.bisquare)
+
+    def square(self):
+        dialog_coefficients = DialogCoefficients(self, "ax^2 + bx + c = 0",
+                                                 my_math.roots_of_square_equation)
+        dialog_coefficients.show()
+
+    def bisquare(self):
+        dialog_coefficients = DialogCoefficients(self, "ax^4 + bx^2 + c = 0",
+                                                 my_math.roots_of_bisquare_equation)
+        dialog_coefficients.setWindowTitle('Решение биквадратного уравнения')
+        dialog_coefficients.show()
+
+
+class DialogCoefficients(QDialog, Ui_dialog_coefficients):
+    def __init__(self, parent, st, func):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.label_seem.setText(st)
+        self.btn_calculate.clicked.connect(lambda x: self.calculate(func))
+
+    def calculate(self, func):
+        res = func(self.get_a.text(), self.get_b.text(), self.get_c.text())
+        if res == my_math.NO_ROOTS:
+            open_warning_dialog(self, 'Нет решений',
+                                'У уравнения с такими коэффициентами нет корней!')
+        elif res[0] == my_math.FULL_SQUARE:
+            open_warning_dialog(self, 'Решение',
+                                'Данное уравнение ' +
+                                my_math.FULL_SQUARE.lower() +
+                                '.\nТаким образом, его корень: {}'.format(res[1]))
+        else:
+            open_warning_dialog(self, 'Решение',
+                                '{}\nкорни данного уравнения:\n{}'.format(res[0],
+                                                                          ', '.join(map(str,
+                                                                                        res[1]))))
 
 
 class DialogOnChoosingTestingMode(QDialog, Ui_choosing_dialog):
