@@ -1,13 +1,11 @@
 import sys
 from contact_with_base import DatabaseClass
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QInputDialog, QLineEdit, QRadioButton, QCheckBox, \
-    QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QInputDialog, \
+QLineEdit, QRadioButton, QCheckBox, QMessageBox
 from main_window_ui import Ui_MainWindow
 from dialog_to_choose_mode_in_testing_ui import Ui_Dialog as Ui_choosing_dialog
 from dialog_adding_task_ui import Ui_Dialog as Ui_adding_task
-from warning_dialog_ui import Ui_Dialog as Ui_warning_dialog
 from dialog_testing_ui import Ui_Dialog as Ui_dialog_testing
-from dialog_wrong_ui import Ui_Dialog as Ui_dialog_wrong
 from dialog_end_of_testing_ui import Ui_Dialog as Ui_dialog_end_of_testing
 from dialog_label_ui import Ui_Dialog as Ui_dialog_label
 from dialog_radiobutton_ui import Ui_Dialog as Ui_dialog_radiobutton_ui
@@ -50,25 +48,30 @@ class DialogOnChoosingTestingMode(QDialog, Ui_choosing_dialog):
 
     def set_next_question(self, task_dct):
         if task_dct['mode'] == 1:
-            self.now_working_dialog = DialogLabel(self, task_dct['task_text'],
-                                                  task_dct['correct_answer'],
-                                                  (100//self.N)*self.counter_all, self.counter_right, self.counter_all)
+            self.now_working_dialog = DialogLabel(
+                self, task_dct['task_text'],
+                task_dct['correct_answer'],
+                (100//self.N)*self.counter_all,
+                self.counter_right, self.counter_all)
         elif task_dct['mode'] == 2:
-            self.now_working_dialog = DialogRadiobutton(self, task_dct['task_text'],
-                                                        task_dct['index_of_correct_answer'],
-                                                        task_dct['variants'],
-                                                        (100 // self.N) * self.counter_all, self.counter_right,
-                                                        self.counter_all)
+            self.now_working_dialog = DialogRadiobutton(
+                self, task_dct['task_text'],
+                task_dct['index_of_correct_answer'],
+                task_dct['variants'],
+                (100 // self.N) * self.counter_all,
+                self.counter_right, self.counter_all)
         else:  # task_dct['mode'] == 3
-            self.now_working_dialog = DialogCheckbox(self, task_dct['task_text'],
-                                                        task_dct['indexes_of_correct_answers'],
-                                                        task_dct['variants'],
-                                                        (100 // self.N) * self.counter_all, self.counter_right,
-                                                        self.counter_all)
+            self.now_working_dialog = DialogCheckbox(
+                self, task_dct['task_text'],
+                task_dct['indexes_of_correct_answers'],
+                task_dct['variants'],
+                (100 // self.N) * self.counter_all,
+                self.counter_right, self.counter_all)
 
     def answer(self):
         try:
-            self.counter_right, self.counter_all = self.now_working_dialog.answer()
+            self.counter_right, self.counter_all = \
+                                self.now_working_dialog.answer()
             self.now_working_dialog.close()
             self.set_next_question(next(self.data))
         except StopIteration:
@@ -97,12 +100,15 @@ class DialogOnAddingTask(QDialog, Ui_adding_task):
 
     def choose_task_type(self):
         foo = self.mode
-        i, okBtnPressed = QInputDialog.getItem(self,
-                                               "Тип задания",
-                                               "Выбирайте с умом!\n\nУчтите уже введённые данные по вопросу\n" +
-                                               "при выборе типа задания, пожалуйста!\n\n" +
-                                               "Выберите тип задания",
-                                               REGIMS.keys(), 1, False)
+        i, okBtnPressed = \
+           QInputDialog.getItem(self,
+                                "Тип задания",
+                                "Выбирайте с умом!" +
+                                "\n\nУчтите уже введённые" +
+                                " данные по вопросу\n" +
+                                "при выборе типа задания, пожалуйста!\n\n" +
+                                "Выберите тип задания",
+                                REGIMS.keys(), 1, False)
         if okBtnPressed:
             self.mode = REGIMS[i]
         if self.mode == 1:
@@ -140,7 +146,8 @@ class DialogOnAddingTask(QDialog, Ui_adding_task):
             return None
         if len(self.variants) == 4:
             i, okBtnPressed = QInputDialog.getText(
-                self, "Слишком много вариантов", "Введённый далее вариант перезапишет последний!")
+                self, "Слишком много вариантов",
+                "Введённый далее вариант перезапишет последний!")
             if okBtnPressed:
                 self.variants[-1] = i
         else:
@@ -157,8 +164,9 @@ class DialogOnAddingTask(QDialog, Ui_adding_task):
             return None
         if self.mode == 2 and len(self.numbers) == 1:
             i, okBtnPressed = QInputDialog.getInt(
-                self, "Правильный ответ", "Ввиду выбранного Вами типа задания,\n" +
-                                          "введённый далее Вами номер правильного ответа\nперезапишет" +
+                self, "Правильный ответ",
+                "Ввиду выбранного Вами типа задания,\n" +
+                "введённый далее Вами номер правильного ответа\nперезапишет" +
                 " уже существующий",
                 1, 1, len(self.variants), 1)
         else:
@@ -177,19 +185,27 @@ class DialogOnAddingTask(QDialog, Ui_adding_task):
         self.label_task_type.setText(REGIMS_BACKWARDS[self.mode])
         self.label_task_type.resize(self.label_task_type.sizeHint())
         self.plainTextEdit_2.setPlainText('\n'.join(self.variants))
-        self.label_right_variants_numbers.setText(", ".join(map(str, self.numbers)))
-        self.label_right_variants_numbers.resize(self.label_right_variants_numbers.sizeHint())
+        self.label_right_variants_numbers.setText(", ".join(map(str,
+                                                                self.numbers)))
+        self.label_right_variants_numbers.resize(
+            self.label_right_variants_numbers.sizeHint())
 
     def submit(self):
         if self.mode == 1:
-            database.add_task({"mode": 1, 'task_text': self.plainTextEdit.toPlainText(),
+            database.add_task({"mode": 1, 'task_text':
+                               self.plainTextEdit.toPlainText(),
                                'correct_answer': self.lineEdit.text()})
         elif self.mode == 2:
-            database.add_task({"mode": 2, 'task_text': self.plainTextEdit.toPlainText(),
-                               'variants': self.variants.copy(), 'index_of_correct_answer': self.numbers.copy()[0]})
+            database.add_task({"mode": 2, 'task_text':
+                               self.plainTextEdit.toPlainText(),
+                               'variants': self.variants.copy(),
+                               'index_of_correct_answer':
+                               self.numbers.copy()[0]})
         else:  # self.mode == 3
-            database.add_task({"mode": 3, 'task_text': self.plainTextEdit.toPlainText(),
-                               'variants': self.variants.copy(), 'indexes_of_correct_answers': self.numbers.copy()})
+            database.add_task({"mode": 3, 'task_text':
+                               self.plainTextEdit.toPlainText(),
+                               'variants': self.variants.copy(),
+                               'indexes_of_correct_answers': self.numbers.copy()})
         database.obnov()
         open_warning_dialog(self, "Успешно!", "Вопрос добавлен в реестр!")
 
@@ -198,7 +214,8 @@ class DialogOnAddingTask(QDialog, Ui_adding_task):
 
 
 class DialogLabel(QDialog, Ui_dialog_label):
-    def __init__(self, parent, task_text, right_answer, progress_bar_value, correct_value, all_value):
+    def __init__(self, parent, task_text,
+                 right_answer, progress_bar_value, correct_value, all_value):
         super().__init__(parent)
         self.master = parent
         self.setupUi(self)
@@ -217,18 +234,21 @@ class DialogLabel(QDialog, Ui_dialog_label):
         users_answer = self.lineEdit.text()
         if users_answer == self.correct_answer:
             self.correct_value += 1
-            open_warning_dialog(self, 'Верно', "Вы правильно ответили на вопрос!")
+            open_warning_dialog(self, 'Верно',
+                                "Вы правильно ответили на вопрос!")
         else:
             open_warning_dialog(self, 'Неверно',
-                                "Неверно!\nВаш ответ:\n{}\nПравильный ответ:\n{}".format(users_answer
-                                                                                         if users_answer != '' else '-',
-                                                                                         self.correct_answer))
+                                "Неверно!\nВаш ответ:" +
+                                "\n{}\nПравильный ответ:\n" +
+                                "{}".format(users_answer
+                                            if users_answer != '' else '-',
+                                            self.correct_answer))
         return self.correct_value, self.all_value
 
 
 class DialogRadiobutton(QDialog, Ui_dialog_radiobutton_ui):
-    def __init__(self, parent, task_text, index_of_correct_answer, variants, progress_bar_value,
-                 correct_value, all_value):
+    def __init__(self, parent, task_text, index_of_correct_answer, variants,
+                 progress_bar_value, correct_value, all_value):
         super().__init__(parent)
         self.master = parent
         self.setupUi(self)
@@ -239,7 +259,8 @@ class DialogRadiobutton(QDialog, Ui_dialog_radiobutton_ui):
         self.lcd_all.display(all_value)
         self.lcd_right.display(correct_value)
         self.btn_answer.clicked.connect(self.master.answer)
-        self.btns = sorted(list(self.buttonGroup.buttons()), key=lambda btn: btn.geometry().y())
+        self.btns = sorted(list(self.buttonGroup.buttons()),
+                           key=lambda btn: btn.geometry().y())
         self.index_of_correct_answer = index_of_correct_answer
         for i in range(len(self.btns)):
             try:
@@ -253,17 +274,20 @@ class DialogRadiobutton(QDialog, Ui_dialog_radiobutton_ui):
         users_answer = next(filter(lambda btn: btn.isChecked(), self.btns))
         if self.btns.index(users_answer) + 1 == self.index_of_correct_answer:
             self.correct_value += 1
-            open_warning_dialog(self, 'Верно', "Вы правильно ответили на вопрос!")
+            open_warning_dialog(self, 'Верно',
+                                "Вы правильно ответили на вопрос!")
         else:
             open_warning_dialog(self, 'Неверно',
-                                "Неверно!\nВы выбрали кнопку номер: {}\nПравильный ответ - кнопка номер {}".format(
-                                    self.btns.index(users_answer), self.index_of_correct_answer + 1))
+                                "Неверно!\nВы выбрали кнопку номер:" +
+                                " {}\nПравильный ответ - кнопка номер" +
+                                " {}".format(self.btns.index(users_answer),
+                                             self.index_of_correct_answer + 1))
         return self.correct_value, self.all_value
 
 
 class DialogCheckbox(QDialog, Ui_dialog_checkbox_ui):
-    def __init__(self, parent, task_text, indexes_of_correct_answers, variants, progress_bar_value,
-                 correct_value, all_value):
+    def __init__(self, parent, task_text, indexes_of_correct_answers,
+                 variants, progress_bar_value, correct_value, all_value):
         super().__init__(parent)
         self.master = parent
         self.setupUi(self)
@@ -274,7 +298,8 @@ class DialogCheckbox(QDialog, Ui_dialog_checkbox_ui):
         self.lcd_all.display(all_value)
         self.lcd_right.display(correct_value)
         self.btn_answer.clicked.connect(self.master.answer)
-        self.btns = sorted(list(self.buttonGroup.buttons()), key=lambda btn: btn.geometry().y())
+        self.btns = sorted(list(self.buttonGroup.buttons()),
+                           key=lambda btn: btn.geometry().y())
         self.indexes_of_correct_answers = indexes_of_correct_answers
         for i in range(len(self.btns)):
             try:
@@ -288,14 +313,19 @@ class DialogCheckbox(QDialog, Ui_dialog_checkbox_ui):
         users_answer = list(map(lambda btn: self.btns.index(btn) + 1, filter(lambda btn: btn.isChecked(), self.btns)))
         if users_answer == self.indexes_of_correct_answers:
             self.correct_value += 1
-            open_warning_dialog(self, 'Верно', "Вы правильно ответили на вопрос!")
+            open_warning_dialog(self, 'Верно',
+                                "Вы правильно ответили на вопрос!")
         else:
             open_warning_dialog(self, 'Неверно',
-                                "Неверно!\nВы выбрали кнопки номер: {}\nПравильный ответ - кнопки номер {}".format(
+                                "Неверно!\nВы выбрали кнопки номер:" +
+                                "{}\nПравильный ответ - кнопки номер" +
+                                " {}".format(
                                     ', '.join(map(str, users_answer))
                                     if ', '.join(map(str, users_answer)) != ''
                                     else '-',
-                                    ', '.join(map(str, self.indexes_of_correct_answers))))
+                                    ', '.join(
+                                        map(str,
+                                            self.indexes_of_correct_answers))))
         return self.correct_value, self.all_value
 
 

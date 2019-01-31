@@ -17,6 +17,9 @@ class Ui_MainWindow(object):
         self.btn_test = QtWidgets.QPushButton(self.centralwidget)
         self.btn_test.setGeometry(QtCore.QRect(130, 50, 131, 23))
         self.btn_test.setObjectName("btn_test")
+        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton.setGeometry(QtCore.QRect(150, 110, 75, 23))
+        self.pushButton.setObjectName("pushButton")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 436, 21))
@@ -33,4 +36,5 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Главное окно помощника"))
         self.btn_test.setText(_translate("MainWindow", "Тестирующая система"))
+        self.pushButton.setText(_translate("MainWindow", "Мат. часть"))
 
